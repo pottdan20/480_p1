@@ -89,6 +89,9 @@ class PriorityQueue:
 def manhattanDistance(xy1, xy2):
     "Returns the Manhattan distance between points xy1 and xy2"
     ''' Your Code goes here'''
+    d_x = abs(xy1[0] - xy2[0])
+    d_y = abs(xy1[1] - xy2[1])
+    return d_x + d_y 
 
 
 class Maze():
@@ -179,13 +182,15 @@ class Maze():
         # Choose the appropriate data structure for the frontier
         # used for search from the three below
 
-        frontier = StackFrontier()
+       # frontier = StackFrontier()
         # frontier = QueueFrontier()
-        # frontier = PriorityQueue()
+        frontier = PriorityQueue()
 
         # slightly different code if using Priority Queue
-        frontier.add(start)    # no priority
-        # frontier.add(start, 100)  #  priority
+        if  isinstance(frontier, PriorityQueue) :
+            frontier.add(start, 100)  #  priority
+        else:
+            frontier.add(start)    # no priority
 
 
         # Initialize an empty explored set
@@ -200,6 +205,7 @@ class Maze():
 
             # Choose a node from the frontier
             node = frontier.remove()
+            print("nextnode is : ", node.state, node.cost)
             self.num_explored += 1
 
             # If node is the goal, then have a solution
@@ -209,32 +215,38 @@ class Maze():
                 cells = []
 
                 ''' your code goes here '''
-
+                
 
 
                 actions.reverse()
                 cells.reverse()
                 self.solution = (actions, cells)  # solution is not local
+                print("goal found")
                 return
 
             # Mark node as explored
+            self.explored.add(node.state)
 
             ''' your code goes here '''
 
             # Add neighbors to frontier
             for action, state in self.neighbors(node.state):
-
+                    
+                    if(state in self.explored):
+                            continue
                     ''' your code goes here '''
+                    if not isinstance(frontier, PriorityQueue) :
+                        # No Priority
+                        
+                        child = Node(state=state, parent=node, action=action, cost=node.cost + 1)
+                        frontier.add(child)                                                  # add back
+                    else:
+                        # Priority  - need to add the appropriate code to
+                        # in case for using PriorityQueue
+                        child = Node(state=state, parent=node, action=action, cost=node.cost + 1)
 
-                    # No Priority
-                    child = Node(state=state, parent=node, action=action, cost=node.cost + 1)
-                    frontier.add(child)                                                  # add back
-
-                    # Priority  - need to add the appropriate code to
-                    # in case for using PriorityQueue
-
-                    # priority = add you code              # use if PQ
-                    # frontier.add(child, priority)        # use if PQ
+                        priority = child.cost + manhattanDistance(child.state, self.goal)              # use if PQ
+                        frontier.add(child, priority)        # use if PQ
 
     def output_image(self, filename, show_solution=True, show_explored=False):
         from PIL import Image, ImageDraw
